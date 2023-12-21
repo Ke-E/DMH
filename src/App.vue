@@ -1,5 +1,11 @@
 <template>
   <v-app>
+    <template v-if="isLoading">
+      <div id="loading">
+        <!-- ★単純なサークルなのでもう少しデザインチックにしたい -->
+        <v-progress-circular indeterminate />
+      </div>
+    </template>
     <v-navigation-drawer color="#fffacd" app clipped v-model="drawer">
       <v-container>
         <v-list dense nav>
@@ -86,12 +92,16 @@ export default {
       // トークンは必要？
       accessToken: "default",
       userInfo: {},
+      isLoading: false,
       isShowSuccessAlert: false,
       providers: providerList,
     };
   },
   created() {
-    // ★ログイン完了まで、画面を読み込み中…的な画面を用意（フラグをtrue）する？
+    // ローディング画面の表示
+    this.isLoading = true;
+
+    // firebaseの認証情報を取得
     const auth = getAuth();
     getRedirectResult(auth)
       .then((result) => {
@@ -114,6 +124,9 @@ export default {
             this.isLogin = true;
           }
         });
+      })
+      .finally(() => {
+        this.isLoading = false;
       });
   },
   computed: {
@@ -139,6 +152,7 @@ export default {
           this.$router.go({
             // ✖未解決：本当はホーム画面に飛ばしたいが、何故か飛ばない…
             // onAuthStateChanged のfalseに入れてしまうと無限ループに陥る
+            // 一旦は子コンポーネント側で遷移するようにハンドリング
             path: "/",
             force: true,
           });
@@ -151,3 +165,15 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+#loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  z-index: 9999;
+  position: fixed;
+  background-color: rgba(#000, 0.5);
+}
+</style>
