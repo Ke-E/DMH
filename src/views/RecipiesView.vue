@@ -12,15 +12,12 @@
           dragのデザイン作り
           ★ ドラッグをしたときの残像、カーソルを当てた位置ではなくて右端が支点となってしまう・・・
             v-cardでなくdivだけだと問題ないのだけど…
-          ★ 
         -->
       <v-card>
         <v-card-title>title-{{ item.name }}</v-card-title>
         <v-card-subtitle
           ><starrating
             v-model="item.rating"
-            :increment="1"
-            :rating="1"
             :max-rating="5"
             :read-only="true"
             :star-size="15"
