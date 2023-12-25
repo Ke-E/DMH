@@ -30,7 +30,37 @@
             />
           </v-card-subtitle>
           <slideupdown :active="item.drawer">
-            <v-card-text>テキストだよ</v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="10">
+                  <p>
+                    <!-- ★改行コードを実際の改行に反映したい -->
+                    説明文-{{ item.description }}
+                  </p>
+                </v-col>
+                <v-col cols="2">
+                  <v-btn
+                    width="100%"
+                    class="mb-2"
+                    small
+                    outlined
+                    color="orange"
+                    @click="transitionExternalLink(item.url)"
+                    >URL</v-btn
+                  >
+                  <v-btn
+                    width="100%"
+                    class="mb-2"
+                    small
+                    outlined
+                    color="primary"
+                    >編集</v-btn
+                  >
+
+                  <v-btn width="100%" small outlined color="red">削除</v-btn>
+                </v-col>
+              </v-row>
+            </v-container>
           </slideupdown>
         </v-card>
       </li>
@@ -53,19 +83,23 @@ export default {
           name: "卵焼き",
           rating: "4",
           drawer: false,
-          dragging: false,
+          url: "https://google.com",
+          description: "評判よし。甘めも今度試してみる",
         },
         {
           name: "そぼろご飯",
           rating: "5",
           drawer: false,
-          dragging: false,
+          url: "https://yahoo.co.jp",
+          description: "ほうれん草は中華風の味付けが評判¥n肉は味濃いめが好み",
         },
         {
           name: "ハンバーグ",
           rating: "3",
           drawer: false,
-          dragging: false,
+          url: "https://github.com/Ke-E/DMH/tree/master",
+          description:
+            "200文字入れてみる¥nABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQR",
         },
       ],
     };
@@ -113,6 +147,9 @@ export default {
       this.recipies.splice(index, 0, deleteElement);
       this.dragIndex = index;
       console.log(this.recipies[0]);
+    },
+    transitionExternalLink(url) {
+      window.open(url, "_blank");
     },
   },
 };
