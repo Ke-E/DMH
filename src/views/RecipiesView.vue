@@ -3,8 +3,9 @@
     <div style="text-align: center">登録済みのレシピはありません</div>
   </div>
   <div v-else>
-    <draggable>
+    <draggable draggable=".recipies">
       <li
+        class="recipies"
         style="list-style: none"
         v-for="(item, index) in recipies"
         :key="item.name"
@@ -100,6 +101,7 @@ export default {
       });
     }
   },
+  // ★mouted() で、取得した uid を用いてレシピ一覧を取得する
   mounted() {},
   methods: {
     dragStart(index) {
@@ -113,7 +115,5 @@ export default {
       console.log(this.recipies[0]);
     },
   },
-  // ★mouted() で取得した uid を用いてレシピ一覧を取得する
-  // 1件もなければ「データは存在しません」と画面に表記する
 };
 </script>
