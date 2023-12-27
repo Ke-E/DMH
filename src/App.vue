@@ -64,7 +64,7 @@
         </template>
       </v-toolbar-items>
     </v-app-bar>
-    <v-main>
+    <v-main style="background-color: #fff3e0">
       <!-- このタグを入れることで[router/index.js]に記載のURLパスに紐づく画面が表示される -->
       <router-view :isLogin="isLogin" :userInfo="userInfo" />
     </v-main>
@@ -111,6 +111,7 @@ export default {
         //  存在しない場合 → 新規でデータ作成
         this.userInfo = result.user;
         console.log(this.userInfo);
+        console.log(this.userInfo.uid);
         this.accessToken = this.userInfo.accessToken;
         this.isLogin = true;
         this.isShowSuccessAlert = true;
