@@ -81,21 +81,21 @@ export default {
       recipies: [
         {
           name: "卵焼き",
-          rating: "4",
+          rating: 4,
           drawer: false,
           url: "https://google.com",
           description: "評判よし。甘めも今度試してみる",
         },
         {
           name: "そぼろご飯",
-          rating: "5",
+          rating: 5,
           drawer: false,
           url: "https://yahoo.co.jp",
           description: "ほうれん草は中華風の味付けが評判¥n肉は味濃いめが好み",
         },
         {
           name: "ハンバーグ",
-          rating: "3",
+          rating: 3,
           drawer: false,
           url: "https://github.com/Ke-E/DMH/tree/master",
           description:
