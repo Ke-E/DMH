@@ -1,15 +1,17 @@
 <template>
   <div>
-    <h1>レシピ登録</h1>
-    <p>{{ uid }}</p>
+    <!-- ★フォントをもう少し映えるものに変える -->
+    <RecipiesEdit :pageTitle="pageTitle"></RecipiesEdit>
   </div>
 </template>
 <script>
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import RecipiesEdit from "../components/RecipiesEdit.vue";
 export default {
   data() {
     return {
       uid: "",
+      pageTitle: "レシピ登録",
     };
   },
   props: {
@@ -21,6 +23,9 @@ export default {
       type: Object,
       default: null,
     },
+  },
+  components: {
+    RecipiesEdit,
   },
   mounted() {
     if (this.isLogin) {
