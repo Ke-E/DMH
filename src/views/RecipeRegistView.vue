@@ -1,7 +1,11 @@
 <template>
   <div>
     <!-- ★フォントをもう少し映えるものに変える -->
-    <RecipiesEdit :pageTitle="pageTitle"></RecipiesEdit>
+    <RecipiesEdit
+      :pageTitle="pageTitle"
+      :uid="uid"
+      @dialogFunc="openDialog"
+    ></RecipiesEdit>
   </div>
 </template>
 <script>
@@ -42,6 +46,11 @@ export default {
         }
       });
     }
+  },
+  methods: {
+    openDialog(isSuccess, title, text) {
+      this.$emit("dialogFunc", isSuccess, title, text);
+    },
   },
 };
 </script>

@@ -8,6 +8,7 @@
         class="recipies"
         style="list-style: none"
         v-for="(item, index) in recipies"
+        v-show="!item.deleteFlg"
         :key="item.name"
         @dragstart="dragStart(index)"
         @dragenter="dragEnter(index)"
@@ -68,6 +69,7 @@
   </div>
 </template>
 <script>
+import { getDatabase, ref, child, get, set } from "firebase/database";
 import starrating from "vue-star-rating";
 import slideupdown from "vue-slide-up-down";
 import draggable from "vuedraggable";
@@ -77,31 +79,7 @@ export default {
     return {
       uid: "",
       dragIndex: null,
-      nonrecipies: [],
-      recipies: [
-        {
-          name: "卵焼き",
-          rating: 4,
-          drawer: false,
-          url: "https://google.com",
-          description: "評判よし。甘めも今度試してみる",
-        },
-        {
-          name: "そぼろご飯",
-          rating: 5,
-          drawer: false,
-          url: "https://yahoo.co.jp",
-          description: "ほうれん草は中華風の味付けが評判¥n肉は味濃いめが好み",
-        },
-        {
-          name: "ハンバーグ",
-          rating: 3,
-          drawer: false,
-          url: "https://github.com/Ke-E/DMH/tree/master",
-          description:
-            "200文字入れてみる¥nABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQR",
-        },
-      ],
+      recipies: [],
     };
   },
   props: {
@@ -120,14 +98,29 @@ export default {
     slideupdown,
   },
   created() {
+    // ログイン状況の確認
     if (this.isLogin) {
       this.uid = this.userInfo.uid;
+      this.getRecipies();
+      // ページ離脱時にレシピ情報をプッシュする処理を追加
+      //window.onbeforeunload = function () {
+      //  this.save();
+      //  return "データを保存しました。";
+      //};
+      //window.addEventListener("beforeunload", this.test());
     } else {
       // 直アクセスの場合はログイン状態をチェック
       const auth = getAuth();
       onAuthStateChanged(auth, (user) => {
         if (user) {
           this.uid = user.uid;
+          this.getRecipies();
+          // ページ離脱時にレシピ情報をプッシュする処理を追加
+          //window.onbeforeunload = function () {
+          //  this.save();
+          //  return "データを保存しました。";
+          //};
+          //window.addEventListener("beforeunload", this.test());
         } else {
           // 未ログインもしくはログアウト後の場合はトップ画面に戻す
           this.$router.push({ path: "/" });
@@ -135,9 +128,46 @@ export default {
       });
     }
   },
-  // ★mouted() で、取得した uid を用いてレシピ一覧を取得する
   mounted() {},
+  destroyed() {
+    window.onbeforeunload = null;
+    //window.removeEventListener("beforeunload", this.test);
+  },
+  // 別のページに遷移する前にソート状態をセーブする
+  beforeRouteLeave(to, from, next) {
+    this.save();
+    next();
+  },
   methods: {
+    getRecipies() {
+      const dbRef = ref(getDatabase());
+      get(child(dbRef, "recipies/" + this.uid))
+        .then((res) => {
+          if (res.exists()) {
+            const recipies = res.val();
+            const keys = Object.keys(recipies);
+            for (const key of keys) {
+              this.recipies.push({
+                name: key,
+                description: recipies[key].description,
+                url: recipies[key].url,
+                rating: recipies[key].rating,
+                imagePath: recipies[key].imagePath,
+                sort: recipies[key].sort,
+                drawer: false,
+                deleteFlg: recipies[key].deleteFlg,
+              });
+            }
+            // sort値で昇順に並び替え
+            this.recipies.sort((a, b) => (a.sort > b.sort ? 1 : -1));
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
     dragStart(index) {
       this.dragIndex = index;
     },
@@ -150,6 +180,27 @@ export default {
     },
     transitionExternalLink(url) {
       window.open(url, "_blank");
+    },
+    // 現在の各レシピの情報をfirebaseに保存
+    save() {
+      const saveRecipies = {};
+      for (const recipi in this.recipies) {
+        saveRecipies[this.recipies[recipi].name] = {
+          description: this.recipies[recipi].description,
+          imagePath: this.recipies[recipi].imagePath,
+          url: this.recipies[recipi].url,
+          rating: this.recipies[recipi].rating,
+          sort: recipi,
+          deleteFlg: this.recipies[recipi].deleteFlg,
+        };
+      }
+      set(ref(getDatabase(), "recipies/" + this.uid), saveRecipies)
+        .then(() => {
+          console.log("更新完了");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
   },
 };

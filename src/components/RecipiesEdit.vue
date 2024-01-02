@@ -4,7 +4,7 @@
       <h1 style="text-decoration: underline">
         {{ pageTitle }}
       </h1>
-      <v-form ref="form" v-model="valid" lazy-validation>
+      <v-form ref="form" v-model="valid">
         <v-text-field
           v-model="name"
           :counter="50"
@@ -40,20 +40,20 @@
           :disabled="!valid"
           color="success"
           class="mt-4 mr-4"
-          @click="validate"
+          @click="insert"
         >
           登録
         </v-btn>
-
-        <v-btn color="primary" outlined class="mt-4 mr-4" @click="reset"
-          >リセット</v-btn
-        >
+        <v-btn color="primary" class="mt-4 mr-4" outlined @click="clearForm">
+          クリア
+        </v-btn>
       </v-form>
     </v-container>
   </div>
 </template>
 <script>
 import starrating from "vue-star-rating";
+import { getDatabase, ref, update } from "firebase/database";
 
 export default {
   data: () => ({
@@ -85,18 +85,47 @@ export default {
       type: String,
       default: "想定しない文字列",
     },
+    uid: {
+      type: String,
+      default: "",
+    },
   },
   components: {
     starrating,
   },
   methods: {
+    // 入力フォームのバリデーション
     validate() {
       this.$refs.form.validate();
     },
-    reset() {
-      this.$refs.form.reset();
+    // データ投入
+    insert() {
+      if (this.$refs.form.validate()) {
+        update(ref(getDatabase(), `recipies/${this.uid}`), {
+          [this.name]: {
+            description: this.description,
+            imagePath: "",
+            url: this.url,
+            rating: this.rating,
+            sort: 0,
+            deleteFlg: false,
+          },
+        })
+          .then(() => {
+            console.log("登録完了");
+            this.$emit("dialogFunc", true, "登録に成功しました！", "");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     },
-    resetValidation() {
+    // フォームのクリア
+    clearForm() {
+      this.name = "";
+      this.description = "";
+      this.url = "";
+      this.rating = 1;
       this.$refs.form.resetValidation();
     },
   },

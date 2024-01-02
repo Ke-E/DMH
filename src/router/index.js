@@ -1,9 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { firebaseConfig } from "../firebase/firebase-config.js";
 
 Vue.use(VueRouter);
 
@@ -37,6 +34,3 @@ const router = new VueRouter({
 });
 
 export default router;
-
-const app = initializeApp(firebaseConfig);
-getAuth(app);

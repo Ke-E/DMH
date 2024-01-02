@@ -1,5 +1,18 @@
 <template>
   <v-app>
+    <v-dialog v-model="dialog.isDialog" width="50%" persistent>
+      <v-card align="center">
+        <v-card-title>
+          {{ dialog.title }}
+        </v-card-title>
+        <v-card-text>
+          {{ dialog.text }}
+        </v-card-text>
+        <v-btn @click="closeDialog" outlined color="primary" class="mb-2"
+          >OK</v-btn
+        >
+      </v-card>
+    </v-dialog>
     <template v-if="isLoading">
       <div id="loading">
         <!-- ★単純なサークルなのでもう少しデザインチックにしたい -->
@@ -66,17 +79,21 @@
     </v-app-bar>
     <v-main style="background-color: #fff3e0">
       <!-- このタグを入れることで[router/index.js]に記載のURLパスに紐づく画面が表示される -->
-      <router-view :isLogin="isLogin" :userInfo="userInfo" />
+      <router-view
+        :isLogin="isLogin"
+        :userInfo="userInfo"
+        @dialogFunc="openDialog"
+      />
     </v-main>
   </v-app>
 </template>
 <script>
 import {
   getAuth,
-  signInWithRedirect,
-  GoogleAuthProvider,
-  getRedirectResult,
   onAuthStateChanged,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signInWithRedirect,
   signOut,
 } from "firebase/auth";
 import AlertSuccess from "./components/AlertSuccess.vue";
@@ -89,6 +106,11 @@ export default {
     return {
       drawer: null,
       isLogin: false,
+      dialog: {
+        isDialog: false,
+        title: "",
+        text: "",
+      },
       // トークンは必要？
       accessToken: "default",
       userInfo: {},
@@ -103,6 +125,7 @@ export default {
 
     // firebaseの認証情報を取得
     const auth = getAuth();
+
     getRedirectResult(auth)
       .then((result) => {
         // ログイン成功後のリダイレクトフロー
@@ -162,6 +185,15 @@ export default {
           console.log("logout failed...");
           console.log(error);
         });
+    },
+    openDialog(isSuccess, title, text) {
+      // isSuccess がfalseならstyleにredを追加？
+      this.dialog.title = title;
+      this.dialog.text = text;
+      this.dialog.isDialog = true;
+    },
+    closeDialog() {
+      this.dialog.isDialog = false;
     },
   },
 };
