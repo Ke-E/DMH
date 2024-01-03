@@ -6,15 +6,15 @@
     <v-dialog v-model="dialog.isDialog" width="50%" persistent>
       <v-card align="center">
         <v-card-title>以下を削除します</v-card-title>
-        <v-card-text>
-          {{ dialog.recipiName }}<br />
-          <v-btn @click="deleteRecipi()" outlined color="red" class="mt-1 mr-1"
-            >OK</v-btn
-          >
-          <v-btn @click="closeDialog" outlined color="#90A4AE" class="mt-1 ml-1"
-            >Cancel</v-btn
-          >
+        <v-card-text style="font-size: 100%">
+          {{ dialog.recipiName }}
         </v-card-text>
+        <v-btn @click="deleteRecipi()" outlined color="red" class="mb-3 mr-1"
+          >OK</v-btn
+        >
+        <v-btn @click="closeDialog" outlined color="#90A4AE" class="mb-3 ml-1"
+          >Cancel</v-btn
+        >
       </v-card>
     </v-dialog>
     <draggable draggable=".recipies">
