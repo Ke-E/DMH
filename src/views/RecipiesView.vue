@@ -1,8 +1,22 @@
 <template>
-  <div v-if="recipies.length == 0">
+  <div v-if="validRecipies == 0">
     <div style="text-align: center">登録済みのレシピはありません</div>
   </div>
   <div v-else>
+    <v-dialog v-model="dialog.isDialog" width="50%" persistent>
+      <v-card align="center">
+        <v-card-title>以下を削除します</v-card-title>
+        <v-card-text>
+          {{ dialog.recipiName }}<br />
+          <v-btn @click="deleteRecipi()" outlined color="red" class="mt-1 mr-1"
+            >OK</v-btn
+          >
+          <v-btn @click="closeDialog" outlined color="#90A4AE" class="mt-1 ml-1"
+            >Cancel</v-btn
+          >
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <draggable draggable=".recipies">
       <li
         class="recipies"
@@ -21,7 +35,24 @@
             v-cardでなくdivだけだと問題ないのだけど…
         -->
         <v-card>
-          <v-card-title>title-{{ item.name }}</v-card-title>
+          <v-card-title>
+            {{ item.name }}
+            <v-spacer />
+            <v-btn
+              color="orange"
+              :outlined="!item.ateFlg"
+              class="mr-2"
+              @click="ate(index)"
+              >{{ item.ateFlg ? "下へ" : "食べた" }}</v-btn
+            >
+            <v-btn
+              color="#F48FB1"
+              :outlined="!item.eatFlg"
+              class="mr-2"
+              @click="eat(index)"
+              >{{ item.eatFlg ? "上へ" : "食べたい" }}</v-btn
+            >
+          </v-card-title>
           <v-card-subtitle
             ><starrating
               v-model="item.rating"
@@ -59,7 +90,14 @@
                     >編集</v-btn
                   >
 
-                  <v-btn width="100%" small outlined color="red">削除</v-btn>
+                  <v-btn
+                    width="100%"
+                    small
+                    outlined
+                    color="red"
+                    @click="openDialog(index)"
+                    >削除</v-btn
+                  >
                 </v-col>
               </v-row>
             </v-container>
@@ -81,6 +119,12 @@ export default {
       uid: "",
       dragIndex: null,
       recipies: [],
+      validRecipies: 0,
+      dialog: {
+        isDialog: false,
+        recipiName: "これが見えたらバグだよ",
+        index: 0,
+      },
     };
   },
   props: {
@@ -117,7 +161,20 @@ export default {
       });
     }
   },
+  watch: {
+    // 削除フラグが動いた際に有効なレシピの件数を更新する(DeepWatch)
+    recipies: {
+      handler: function () {
+        const count = this.recipies.filter((n) => n.deleteFlg == false).length;
+        this.validRecipies = count;
+      },
+      deep: true,
+    },
+  },
   methods: {
+    /**
+     * firebaseからレシピ一覧を取得し、成形、ソートして格納する
+     */
     getRecipies() {
       const dbRef = ref(getDatabase());
       get(child(dbRef, "recipies/" + this.uid))
@@ -133,8 +190,10 @@ export default {
                 rating: recipies[key].rating,
                 imagePath: recipies[key].imagePath,
                 sort: recipies[key].sort,
-                drawer: false,
                 deleteFlg: recipies[key].deleteFlg,
+                drawer: false,
+                ateFlg: false,
+                eatFlg: false,
               });
             }
             // sort値で昇順に並び替え
@@ -160,8 +219,37 @@ export default {
     dragEnd() {
       this.save();
     },
+    /**
+     * URLを別タブで開く
+     */
     transitionExternalLink(url) {
       window.open(url, "_blank");
+    },
+    /**
+     * 「食べた」ボタンを押下で「下へ」ボタンに変化
+     * 「下へ」ボタンを押下で配列の最後尾へ移動し、状態を保存
+     */
+    ate(index) {
+      if (!this.recipies[index].ateFlg) {
+        this.recipies[index].ateFlg = true;
+      } else {
+        this.recipies[index].ateFlg = false;
+        this.recipies.push(this.recipies.splice(index, 1)[0]);
+        this.save();
+      }
+    },
+    /**
+     * 「食べたい」ボタンを押下で「上へ」ボタンに変化
+     * 「上へ」ボタンを押下で配列の最前列へ移動し、状態を保存
+     */
+    eat(index) {
+      if (!this.recipies[index].eatFlg) {
+        this.recipies[index].eatFlg = true;
+      } else {
+        this.recipies[index].eatFlg = false;
+        this.recipies.unshift(this.recipies.splice(index, 1)[0]);
+        this.save();
+      }
     },
     // 現在の各レシピの情報をfirebaseに保存
     save() {
@@ -183,6 +271,19 @@ export default {
         .catch((err) => {
           console.log(err);
         });
+    },
+    openDialog(index) {
+      this.dialog.recipiName = this.recipies[index].name;
+      this.dialog.index = index;
+      this.dialog.isDialog = true;
+    },
+    closeDialog() {
+      this.dialog.isDialog = false;
+    },
+    deleteRecipi() {
+      this.recipies[this.dialog.index].deleteFlg = true;
+      this.save();
+      this.dialog.isDialog = false;
     },
   },
 };
