@@ -12,6 +12,7 @@
         :key="item.name"
         @dragstart="dragStart(index)"
         @dragenter="dragEnter(index)"
+        @dragend="dragEnd()"
         @click="item.drawer = !item.drawer"
       >
         <!-- 
@@ -102,12 +103,6 @@ export default {
     if (this.isLogin) {
       this.uid = this.userInfo.uid;
       this.getRecipies();
-      // ページ離脱時にレシピ情報をプッシュする処理を追加
-      //window.onbeforeunload = function () {
-      //  this.save();
-      //  return "データを保存しました。";
-      //};
-      //window.addEventListener("beforeunload", this.test());
     } else {
       // 直アクセスの場合はログイン状態をチェック
       const auth = getAuth();
@@ -115,28 +110,12 @@ export default {
         if (user) {
           this.uid = user.uid;
           this.getRecipies();
-          // ページ離脱時にレシピ情報をプッシュする処理を追加
-          //window.onbeforeunload = function () {
-          //  this.save();
-          //  return "データを保存しました。";
-          //};
-          //window.addEventListener("beforeunload", this.test());
         } else {
           // 未ログインもしくはログアウト後の場合はトップ画面に戻す
           this.$router.push({ path: "/" });
         }
       });
     }
-  },
-  mounted() {},
-  destroyed() {
-    window.onbeforeunload = null;
-    //window.removeEventListener("beforeunload", this.test);
-  },
-  // 別のページに遷移する前にソート状態をセーブする
-  beforeRouteLeave(to, from, next) {
-    this.save();
-    next();
   },
   methods: {
     getRecipies() {
@@ -177,6 +156,9 @@ export default {
       this.recipies.splice(index, 0, deleteElement);
       this.dragIndex = index;
       console.log(this.recipies[0]);
+    },
+    dragEnd() {
+      this.save();
     },
     transitionExternalLink(url) {
       window.open(url, "_blank");
